@@ -26,7 +26,7 @@ kubectl [command] [TYPE] [NAME] [flags]
 <!--more-->
 
 
-# 常用命令
+# 环境准备
 ## 指定配置文件
 ```
 # 指定默认配置文件
@@ -56,78 +56,6 @@ echo "source /usr/share/bash-completion/bash_completion" >> ~/.bashrc
 echo "source <(kubectl completion bash)" >> ~/.bashrc
 ```
 
-## 查看资源缩写
-```
-kubectl describe
-kubectl api-resources
-```
-
-输出结果为：
-```
-NAME                              SHORTNAMES   APIGROUP                       NAMESPACED   KIND
-bindings                                                                      true         Binding
-componentstatuses                 cs                                          false        ComponentStatus
-configmaps                        cm                                          true         ConfigMap
-endpoints                         ep                                          true         Endpoints
-events                            ev                                          true         Event
-limitranges                       limits                                      true         LimitRange
-namespaces                        ns                                          false        Namespace
-nodes                             no                                          false        Node
-persistentvolumeclaims            pvc                                         true         PersistentVolumeClaim
-persistentvolumes                 pv                                          false        PersistentVolume
-pods                              po                                          true         Pod
-podtemplates                                                                  true         PodTemplate
-replicationcontrollers            rc                                          true         ReplicationController
-resourcequotas                    quota                                       true         ResourceQuota
-secrets                                                                       true         Secret
-serviceaccounts                   sa                                          true         ServiceAccount
-services                          svc                                         true         Service
-mutatingwebhookconfigurations                  admissionregistration.k8s.io   false        MutatingWebhookConfiguration
-validatingwebhookconfigurations                admissionregistration.k8s.io   false        ValidatingWebhookConfiguration
-batchreleases                                  alicloud.com                   true         BatchRelease
-customresourcedefinitions         crd,crds     apiextensions.k8s.io           false        CustomResourceDefinition
-apiservices                                    apiregistration.k8s.io         false        APIService
-controllerrevisions                            apps                           true         ControllerRevision
-daemonsets                        ds           apps                           true         DaemonSet
-deployments                       deploy       apps                           true         Deployment
-replicasets                       rs           apps                           true         ReplicaSet
-statefulsets                      sts          apps                           true         StatefulSet
-tokenreviews                                   authentication.k8s.io          false        TokenReview
-localsubjectaccessreviews                      authorization.k8s.io           true         LocalSubjectAccessReview
-selfsubjectaccessreviews                       authorization.k8s.io           false        SelfSubjectAccessReview
-selfsubjectrulesreviews                        authorization.k8s.io           false        SelfSubjectRulesReview
-subjectaccessreviews                           authorization.k8s.io           false        SubjectAccessReview
-horizontalpodautoscalers          hpa          autoscaling                    true         HorizontalPodAutoscaler
-cronjobs                          cj           batch                          true         CronJob
-jobs                                           batch                          true         Job
-certificatesigningrequests        csr          certificates.k8s.io            false        CertificateSigningRequest
-leases                                         coordination.k8s.io            true         Lease
-events                            ev           events.k8s.io                  true         Event
-daemonsets                        ds           extensions                     true         DaemonSet
-deployments                       deploy       extensions                     true         Deployment
-ingresses                         ing          extensions                     true         Ingress
-networkpolicies                   netpol       extensions                     true         NetworkPolicy
-podsecuritypolicies               psp          extensions                     false        PodSecurityPolicy
-replicasets                       rs           extensions                     true         ReplicaSet
-globaljobs                        globaljob    jobs.aliyun.com                true         GlobalJob
-nodes                                          metrics.k8s.io                 false        NodeMetrics
-pods                                           metrics.k8s.io                 true         PodMetrics
-ingresses                         ing          networking.k8s.io              true         Ingress
-networkpolicies                   netpol       networking.k8s.io              true         NetworkPolicy
-runtimeclasses                                 node.k8s.io                    false        RuntimeClass
-poddisruptionbudgets              pdb          policy                         true         PodDisruptionBudget
-podsecuritypolicies               psp          policy                         false        PodSecurityPolicy
-clusterrolebindings                            rbac.authorization.k8s.io      false        ClusterRoleBinding
-clusterroles                                   rbac.authorization.k8s.io      false        ClusterRole
-rolebindings                                   rbac.authorization.k8s.io      true         RoleBinding
-roles                                          rbac.authorization.k8s.io      true         Role
-priorityclasses                   pc           scheduling.k8s.io              false        PriorityClass
-csidrivers                                     storage.k8s.io                 false        CSIDriver
-csinodes                                       storage.k8s.io                 false        CSINode
-storageclasses                    sc           storage.k8s.io                 false        StorageClass
-volumeattachments                              storage.k8s.io                 false        VolumeAttachment
-```
-
 ## 查看集群信息
 ```
 # 查看集群信息
@@ -139,8 +67,48 @@ kubectl get cs
 
 # 查看node资源使用
 kubectl top node
+
+# 查看集群事件
+kubectl get ev
 ```
 
+# 查看帮助
+## 查看资源缩写
+```
+kubectl describe
+kubectl api-resources
+```
+建议记住常用资源的SHORTNAMES，可以提升输入效率。
+此外，记住常用资源的APIGROUP，可以提高编写yaml文件时的效率。
+
+## 查看可用api版本
+`kubectl api-versions`
+
+## yaml帮助
+yaml文件分成四部分，apiVersion、kind、metadata和spec。
+apiVersion和kind是关联的，参考`kubectl api-resources`。
+metadata必填name、namespace、labels。
+pod.spec主要填containers的name和image；deployment.spec主要填replicas、template和selector；service.spec主要填selector、ports和type。
+
+编写yaml文件的过程中，如果忘记了某些结构和字段，可以使用kubectl explain命令来获取帮助。
+
+1、查看资源包含哪些字段
+以查看deployment的yaml包含哪些字段为例：
+```
+kubectl explain deployment
+kubectl explain deployment --api-version=apps/v1
+```
+
+2、查看子字段
+以查看节点亲和性字段为例：
+```
+kubectl explain deployment.spec.template.spec.affinity
+kubectl explain deployment.spec.template.spec.affinity.nodeAffinity
+...
+kubectl explain deployment.spec.template.spec.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms.matchExpressions
+```
+
+# 资源相关
 ## 查看资源
 1、查看集群的所有资源
 ```
@@ -152,7 +120,7 @@ kubectl get all -o wide
 ```
 # 查看deployment
 kubectl get deploy
-kubectl get deploy -n ratel -o wide
+kubectl get deploy -n voidking -o wide
 
 # 查看deployment实时变化
 kubectl get deploy --watch
@@ -172,6 +140,33 @@ kubectl describe deploy
 ```
 pod、service、node的查看方法和deployment相同。
 
+## 创建资源
+```
+kubectl create -f deploy.yaml
+kubectl apply -f deploy.yaml
+```
+
+## 更新资源
+```
+kubectl edit deployment deployment-name
+kubectl replace -f deploy.yaml
+kubectl apply -f deploy.yaml
+```
+
+## 删除资源
+```
+kubectl delete deployment deployment-name
+```
+
+## 扩缩容
+方法一：通过扩缩容命令。
+```
+kubectl scale --replicas=2 deployment deployment-name
+```
+
+方法二：通过更新yaml文件。
+
+# yaml相关
 ## 导出yaml或json文件
 ```
 # 导出deployment的yaml文件
@@ -188,60 +183,7 @@ kubectl get deploy/deployment-name -o json > deploy-name.json
 ```
 pod、service、node的yaml/json文件的导出方法和deployment相同。
 
-## node封锁
-```
-# 封锁node，不允许分配pod
-kubectl cordon nodename
-
-# 从指定node驱除pod
-kubectl drain nodename --ignore-daemonsets
-
-# 解除node的封锁，允许分配pod
-kubectl uncordon nodename
-```
-
-## 事件相关
-```
-# 查看集群事件
-kubectl get ev
-```
-
-## 故障排查
-故障排查的第一步是先给问题分下类。这个问题是什么？Pods，Replication Controller或者Service？
-1、Pods排查
-```
-# 查看pod详细信息
-kubectl describe pods ${POD_NAME}
-
-# 查看容器日志
-kubectl logs ${POD_NAME} ${CONTAINER_NAME}
-
-# 查看crashed容器日志
-kubectl logs --previous ${POD_NAME} ${CONTAINER_NAME}
-
-# 查看运行的容器内部日志
-kubectl exec ${POD_NAME} -c ${CONTAINER_NAME} -- cat /var/log/cassandra/system.log
-
-# 查看运行的容器内部日志（pod只有一个容器）
-# kubectl exec ${POD_NAME} -- cat /var/log/cassandra/system.log
-```
-
-2、Replication Controllers排查
-```
-# 监控rc相关事件
-kubectl describe rc ${CONTROLLER_NAME}
-```
-
-3、Services排查
-```
-# 查看endpoints资源，service选择到了哪些pod和端口
-kubectl get endpoints ${SERVICE_NAME}
-```
-
-更多内容参考[应用故障排查](https://kubernetes.io/zh/docs/tasks/debug-application-cluster/debug-application/)。
-
-## 自动生成yaml
-### pod yaml
+## pod yaml
 生成pod的yaml文件模板：
 ```
 kubectl run vk-pod --image=nginx --generator=run-pod/v1 --dry-run -o yaml
@@ -267,7 +209,7 @@ status: {}
 
 更多内容，参考[Kubernetes kubectl run 命令详解](http://docs.kubernetes.org.cn/468.html)。
 
-### deployment yaml
+## deployment yaml
 1、生成deployment的yaml文件模板（历史方法）：
 ```
 kubectl run vk-deploy --image=nginx --dry-run -o yaml
@@ -318,7 +260,7 @@ status: {}
 
 更多内容，参考[Kubernetes kubectl create deployment 命令详解](http://docs.kubernetes.org.cn/535.html)。
 
-### service yaml
+## service yaml
 生成service的yaml文件模板（推荐方法）：
 ```
 kubectl create service clusterip vk-svc --tcp="5678:8080" --dry-run -o yaml 
@@ -347,29 +289,69 @@ status:
 
 更多内容，参考[Kubernetes kubectl create service 命令详解](http://docs.kubernetes.org.cn/564.html)和[Service](https://kubernetes.io/docs/concepts/services-networking/service/)。
 
-## 编辑yaml
-生成了模板，很多字段依然不记得怎么办？比如要添加节点亲和性，那么可以查看相关解释：
-```
-kubectl explain deployment.spec.template.spec.affinity
-kubectl explain deployment.spec.template.spec.affinity.nodeAffinity
-...
-kubectl explain deployment.spec.template.spec.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms.matchExpressions
-```
-然后，根据层级关系和解释编辑yaml文件模板。
-
 ## yaml验证
 ```
 kubectl create --validate -f deployment.yaml
 ```
 
-## 徒手写yaml
-首先把yaml文件分成四部分，typeMeta、objectMeta、spec和status，其中status部分可以不写。
-typeMeta包括apiVersion和kind；
-metadata必填name、namespace、labels；
-pod.spec主要填containers的name和image，deployment.spec主要填replicas、selector的matchLabels、template，service.spec主要填selector、ports和type。
+# 容器交互
+## 登录容器
+```
+kubectl get pods
+kubectl exec -it pod-name /bin/bash
+kubectl exec -it pod-name -c container-name /bin/bash
+```
 
 ## 拷贝文件
 ```
 # 拷贝pod内容到宿主机
 kubectl cp podname-564949c96c-m986n:/path/filename .
+```
+
+# 故障排查
+故障排查的第一步是先给问题分下类。这个问题是什么？Pods，Replication Controller或者Service？
+更多内容参考[应用故障排查](https://kubernetes.io/zh/docs/tasks/debug-application-cluster/debug-application/)。
+
+## Pods排查
+```
+# 查看pod详细信息
+kubectl describe pods ${POD_NAME}
+
+# 查看容器日志
+kubectl logs ${POD_NAME} ${CONTAINER_NAME}
+
+# 查看crashed容器日志
+kubectl logs --previous ${POD_NAME} ${CONTAINER_NAME}
+
+# 查看运行的容器内部日志
+kubectl exec ${POD_NAME} -c ${CONTAINER_NAME} -- cat /var/log/cassandra/system.log
+
+# 查看运行的容器内部日志（pod只有一个容器）
+# kubectl exec ${POD_NAME} -- cat /var/log/cassandra/system.log
+```
+
+## RC排查
+Replication Controllers排查
+```
+# 监控rc相关事件
+kubectl describe rc ${CONTROLLER_NAME}
+```
+
+## Services排查
+```
+# 查看endpoints资源，service选择到了哪些pod和端口
+kubectl get endpoints ${SERVICE_NAME}
+```
+
+## node封锁
+如果确认了是node的问题，或者node需要升级维护，这时需要对node进行封锁，并且驱除pod。
+```
+# 封锁node，不允许分配pod
+kubectl cordon nodename
+
+# 从指定node驱除pod
+kubectl drain nodename --ignore-daemonsets
+
+# 解除node的封锁，允许分配pod
+kubectl uncordon nodename
 ```
