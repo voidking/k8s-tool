@@ -166,6 +166,12 @@ kubectl scale --replicas=2 deployment deployment-name
 
 方法二：通过更新yaml文件。
 
+## 暴露服务
+```
+kubectl expose deployment deployment-name --port=6789 --target-port=80
+kubectl expose -f vk-deploy.yaml --port=6789 --target-port=80
+```
+
 # yaml相关
 ## 导出yaml或json文件
 ```
@@ -260,10 +266,14 @@ status: {}
 
 更多内容，参考[Kubernetes kubectl create deployment 命令详解](http://docs.kubernetes.org.cn/535.html)。
 
+注意，我们并不需要在deployment中指定容器对外暴露的ports，因为该字段只是一个提示作用。
+
+> List of ports to expose from the container. Exposing a port here gives the system additional information about the network connections a container uses, but is primarily informational. Not specifying a port here DOES NOT prevent that port from being exposed. Any port which is listening on the default "0.0.0.0" address inside a container will be accessible from the network. Cannot be updated.
+
 ## service yaml
 生成service的yaml文件模板（推荐方法）：
 ```
-kubectl create service clusterip vk-svc --tcp="5678:8080" --dry-run -o yaml 
+kubectl create service clusterip vk-svc --tcp="5678:80" --dry-run -o yaml 
 ```
 生成内容为：
 ```
@@ -276,10 +286,10 @@ metadata:
   name: vk-svc
 spec:
   ports:
-  - name: 5678-8080
+  - name: 5678-80
     port: 5678
     protocol: TCP
-    targetPort: 8080
+    targetPort: 80
   selector:
     app: vk-svc
   type: ClusterIP
@@ -355,3 +365,8 @@ kubectl drain nodename --ignore-daemonsets
 # 解除node的封锁，允许分配pod
 kubectl uncordon nodename
 ```
+
+# 书签
+[Overview of kubectl](https://kubernetes.io/docs/reference/kubectl/overview/)
+
+[Kubernetes kubectl 命令表](http://docs.kubernetes.org.cn/683.html)

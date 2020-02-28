@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: vk-svc
+  name: vk-svc
+spec:
+  ports:
+  - name: 5678-80
+    port: 5678
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: vk-deploy
+  type: ClusterIP
+status:
+  loadBalancer: {}
