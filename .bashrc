@@ -14,3 +14,4 @@ fi
 # source <(kubectl completion bash)
 export KUBECONFIG=/home/haojin/.kube/config
 alias k=kubectl
+kubectl config set-context $(kubectl config current-context) --namespace=voidking
