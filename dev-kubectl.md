@@ -38,6 +38,9 @@ kubectl config view
 # 指定单次运行配置文件
 kubectl get deployments --kubeconfig=/root/.kube/config
 kubectl get deployments --kubeconfig /root/.kube/config
+
+# 指定默认namespace
+kubectl config set-context $(kubectl config current-context) --namespace=voidking
 ```
 
 ## 使用别名缩写
@@ -114,6 +117,9 @@ kubectl explain deployment.spec.template.spec.affinity.nodeAffinity.requiredDuri
 ```
 kubectl get all
 kubectl get all -o wide
+
+# 根据label筛选所有资源
+kubectl get all -l 'env=dev'
 ```
 
 2、查看deployment
@@ -121,6 +127,9 @@ kubectl get all -o wide
 # 查看deployment
 kubectl get deploy
 kubectl get deploy -n voidking -o wide
+kubectl get deploy -l 'env=dev'
+kubectl get deploy --selector='env=dev'
+kubectl get deploy --all-namespaces
 
 # 查看deployment实时变化
 kubectl get deploy --watch
@@ -168,8 +177,18 @@ kubectl scale --replicas=2 deployment deployment-name
 
 ## 暴露服务
 ```
-kubectl expose deployment deployment-name --port=6789 --target-port=80
-kubectl expose -f vk-deploy.yaml --port=6789 --target-port=80
+# 为deployment创建clusterip，暴露clusterip的80端口
+kubectl expose deployment deployment-name --port=80 --name svc-name
+# 为deployment创建clusterip，暴露clusterip的6789端口
+kubectl expose deployment deployment-name --target-port=80 --port=6789
+kubectl expose -f vk-deploy.yaml --target-port=80 --port=6789
+# 创建nodeport，暴露clusterip的80端口，暴露node的随机端口
+kubectl expose deployment deployment-name --port=80 --type=NodePort --name svc-name
+
+# 创建clusterip，暴露clusterip的80端口
+kubectl create service clusterip svc-name --tcp=80:80
+# 创建nodeport，暴露clusterip的80端口，暴露node的30080端口
+kubectl create service nodeport svc-name --tcp=80:80 --node-port=30080
 ```
 
 # yaml相关
@@ -192,7 +211,8 @@ pod、service、node的yaml/json文件的导出方法和deployment相同。
 ## pod yaml
 生成pod的yaml文件模板：
 ```
-kubectl run vk-pod --image=nginx --generator=run-pod/v1 --dry-run -o yaml
+kubectl run vk-pod --image=nginx --generator=run-pod/v1 -l 'name=vk-pod,env=dev' --dry-run -o yaml
+kubectl run vk-pod --image=nginx --generator=run-pod/v1 --labels='name=vk-pod,env=dev' --dry-run -o yaml
 ```
 生成内容为：
 ```
@@ -304,6 +324,86 @@ status:
 kubectl create --validate -f deployment.yaml
 ```
 
+# node相关
+## taint和tolerations
+```
+# 添加taint
+kubectl taint nodes node1 key1=value1:NoSchedule
+kubectl taint nodes node1 key2=value2:PreferNoSchedule
+kubectl taint nodes node1 key3=value3:NoExecute
+
+# 删除taint
+kubectl taint nodes node1 value1:NoSchedule-
+```
+
+同时，要在pod yaml的spec下添加tolerations字段：
+```
+spec:
+  tolerations:
+  - key: "key1"
+    operator: "Equal"
+    value: "value1"
+    effect: "NoSchedule"
+  - key: "key2"
+    operator: "Exists"
+    effect: "PreferNoSchedule"
+  - key: "key3"
+    operator: "Equal"
+    value: "value3"
+    effect: "NoExecute"
+```
+
+## label和affinity
+```
+# 添加label
+kubectl label nodes node1 key1=value1,key2=value2
+
+# 删除label
+kubectl label nodes node1 key1-
+```
+
+同时，要在pod yaml中添加tolerations字段：
+```
+nodeSelector:
+  disktype: ssd
+```
+或者，使用：
+```
+spec:
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: key1
+            operator: In
+            values:
+            - value1
+            - valuex
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 1
+        preference:
+          matchExpressions:
+          - key: key2
+            operator: In
+            values:
+            - value2
+            - valuey
+```
+
+## node封锁
+如果node存在问题，或者node需要升级维护，这时需要对node进行封锁，并且驱除pod。
+```
+# 封锁node，不允许分配pod
+kubectl cordon nodename
+
+# 从指定node驱除pod
+kubectl drain nodename --ignore-daemonsets
+
+# 解除node的封锁，允许分配pod
+kubectl uncordon nodename
+```
+
 # 容器交互
 ## 登录容器
 ```
@@ -353,18 +453,8 @@ kubectl describe rc ${CONTROLLER_NAME}
 kubectl get endpoints ${SERVICE_NAME}
 ```
 
-## node封锁
-如果确认了是node的问题，或者node需要升级维护，这时需要对node进行封锁，并且驱除pod。
-```
-# 封锁node，不允许分配pod
-kubectl cordon nodename
-
-# 从指定node驱除pod
-kubectl drain nodename --ignore-daemonsets
-
-# 解除node的封锁，允许分配pod
-kubectl uncordon nodename
-```
+# k8s工具箱
+[voidking/k8s-tool](https://github.com/voidking/k8s-tool)
 
 # 书签
 [Overview of kubectl](https://kubernetes.io/docs/reference/kubectl/overview/)
