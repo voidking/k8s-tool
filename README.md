@@ -23,3 +23,15 @@ kubectl create secret generic db-user-pass --from-literal=username=voidking --fr
 ```
 kubectl expose deployment deployment-name --port=6789 --target-port=80
 ```
+
+# csr
+```
+openssl genrsa -out voidking.key 2048
+openssl req -new -key voidking.key -subj  "/CN=voidking" -out voidking.csr
+cat voidking.csr | base64
+
+kubectl apply -f voidking-csr.yaml
+kubectl get csr 
+kubectl certificate approve voidking
+kubectl get csr voidking -o yaml
+```
