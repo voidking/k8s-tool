@@ -35,3 +35,23 @@ kubectl get csr
 kubectl certificate approve voidking
 kubectl get csr voidking -o yaml
 ```
+
+# secret for registry
+1、创建registry secret
+```
+kubectl create secret docker-registry private-reg-cred --docker-username=dock_user --docker-password=dock_password --docker-server=myprivateregistry.com:5000 --docker-email=dock_user@myprivateregistry.com
+```
+
+2、在pod yaml中使用secret
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  name: private-reg
+spec:
+  containers:
+  - name: private-reg-container
+    image: <your-private-image>
+  imagePullSecrets:
+  - name: private-reg-cred
+```
