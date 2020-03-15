@@ -55,3 +55,8 @@ spec:
   imagePullSecrets:
   - name: private-reg-cred
 ```
+
+# install weave
+```
+kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+```
