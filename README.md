@@ -60,3 +60,26 @@ spec:
 ```
 kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
 ```
+
+# upgrade
+## master
+```
+kubeadm upgrade plan
+apt install kubeadm=1.12.0-00
+kubeadm upgrade apply v1.12.0
+apt install kubelet=1.12.0-00
+systemctl restart kubelet
+```
+
+## node01
+```
+kubectl drain node01
+kubectl cordon node01
+
+apt-get install kubeadm=1.12.0-00
+apt-get install kubelet=1.12.0-00
+kubeadm upgrade node config --kubelet-version v1.12.0
+systemctl restart kubelet
+
+kubectl uncordon node01
+```
