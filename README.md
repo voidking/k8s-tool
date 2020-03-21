@@ -83,3 +83,59 @@ systemctl restart kubelet
 
 kubectl uncordon node01
 ```
+
+# etcd
+## backup
+```
+kubectl describe pod etcd-master -n kube-system
+
+ETCDCTL_API=3 etcdctl \
+--endpoints=https://[127.0.0.1]:2379 \
+--cacert=/etc/kubernetes/pki/etcd/ca.crt \
+--cert=/etc/kubernetes/pki/etcd/server.crt \
+--key=/etc/kubernetes/pki/etcd/server.key \
+snapshot save /tmp/snapshot-pre-boot.db
+```
+
+## restore
+1、execute command
+```
+ETCDCTL_API=3 etcdctl \
+--endpoints=https://[127.0.0.1]:2379 \
+--cacert=/etc/kubernetes/pki/etcd/ca.crt \
+--cert=/etc/kubernetes/pki/etcd/server.crt \
+--key=/etc/kubernetes/pki/etcd/server.key \
+--initial-cluster=master=https://127.0.0.1:2380 \
+--initial-cluster-token etcd-cluster-1 \
+--initial-advertise-peer-urls=https://127.0.0.1:2380 \
+--name=master \
+--data-dir /var/lib/etcd-from-backup \
+snapshot restore /tmp/snapshot-pre-boot.db
+```
+
+2、vim /etc/kubernetes/manifests/etcd.yaml
+```
+# Update --data-dir to use new target location
+--data-dir=/var/lib/etcd-from-backup
+
+# Update new initial-cluster-token to specify new cluster
+--initial-cluster-token=etcd-cluster-1
+
+# Update volumes and volume mounts to point to new path
+    volumeMounts:
+    - mountPath: /var/lib/etcd-from-backup
+      name: etcd-data
+    - mountPath: /etc/kubernetes/pki/etcd
+      name: etcd-certs
+  hostNetwork: true
+  priorityClassName: system-cluster-critical
+  volumes:
+  - hostPath:
+      path: /var/lib/etcd-from-backup
+      type: DirectoryOrCreate
+    name: etcd-data
+  - hostPath:
+      path: /etc/kubernetes/pki/etcd
+      type: DirectoryOrCreate
+    name: etcd-certs
+```
