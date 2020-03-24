@@ -9,9 +9,13 @@ fi
 # export SYSTEMD_PAGER=
 
 # User specific aliases and functions
-# yum install -y bash-completion
-# source /usr/share/bash-completion/bash_completion
-# source <(kubectl completion bash)
 export KUBECONFIG=/home/haojin/.kube/config
-alias k=kubectl
 kubectl config set-context $(kubectl config current-context) --namespace=voidking
+alias k="kubectl"
+alias kg="kubectl get"
+alias kd="kubectl describe"
+
+# yum install -y bash-completion
+source /usr/share/bash-completion/bash_completion
+source <(kubectl completion bash)
+complete -F __start_kubectl k
