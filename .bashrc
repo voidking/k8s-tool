@@ -10,7 +10,8 @@ fi
 
 # User specific aliases and functions
 export KUBECONFIG=/home/haojin/.kube/config
-kubectl config set-context $(kubectl config current-context) --namespace=voidking
+# kubectl config set-context $(kubectl config current-context) --namespace=voidking
+kubectl config set-context --current --namespace=voidking
 alias k="kubectl"
 alias kg="kubectl get"
 alias kd="kubectl describe"
