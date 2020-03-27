@@ -35,20 +35,17 @@ export KUBECONFIG=~/.kube/config
 # 查看kubectl配置
 kubectl config view
 
+# 指定配置文件和context
+kubectl config --kubeconfig=/root/vk-kube-config use-context voidking@kubenertes
+
 # 指定单次运行配置文件
 kubectl get deployments --kubeconfig=/root/.kube/config
 kubectl get deployments --kubeconfig /root/.kube/config
 
 # 指定默认namespace
+kubectl config set-context --current --namespace=voidking
 kubectl config set-context $(kubectl config current-context) --namespace=voidking
 ```
-
-## 使用别名缩写
-```
-# kubectl缩写为k
-alias k="/usr/local/bin/kubectl"
-```
-建议把配置写入 .bashrc ，登录后别名自动生效。
 
 ## 命令自动补全
 ```
@@ -58,6 +55,19 @@ source <(kubectl completion bash)
 echo "source /usr/share/bash-completion/bash_completion" >> ~/.bashrc
 echo "source <(kubectl completion bash)" >> ~/.bashrc
 ```
+
+## 使用别名缩写
+```
+# kubectl缩写为k
+# alias k=kubectl
+alias k="/usr/local/bin/kubectl"
+complete -F __start_kubectl k
+
+# 可选alias
+alias kg="kubectl get"
+alisa kd="kubectl describe"
+```
+建议把配置写入 .bashrc ，登录后别名自动生效。
 
 ## 查看集群信息
 ```
@@ -130,6 +140,7 @@ kubectl get deploy -n voidking -o wide
 kubectl get deploy -l 'env=dev'
 kubectl get deploy --selector='env=dev'
 kubectl get deploy --all-namespaces
+kubectl get deploy --show-labels
 
 # 查看deployment实时变化
 kubectl get deploy --watch
@@ -157,9 +168,24 @@ kubectl apply -f deploy.yaml
 
 ## 更新资源
 ```
+# 编辑集群中的资源
 kubectl edit deployment deployment-name
+
+# 比较manifest与集群中当前资源的不同
+kubectl diff -f deploy.yaml
+
+# 应用最新定义
 kubectl replace -f deploy.yaml
 kubectl apply -f deploy.yaml
+
+# 添加label
+kubectl label deployment deployment-name new-label=awesome
+
+# 添加annotation
+kubectl annotate deployment deployment-name icon-url=http://goo.gl/XXBTWq 
+
+# 部分修改deployment
+kubectl patch deployment deployment-name --type json -p='[{"op": "remove", "path": "/spec/template/spec/containers/0/livenessProbe"}]'
 ```
 
 ## 删除资源
@@ -191,6 +217,44 @@ kubectl create service clusterip svc-name --tcp=80:80
 kubectl create service nodeport svc-name --tcp=80:80 --node-port=30080
 ```
 
+## 版本回退
+```
+# 查看发布历史
+kubectl rollout history deployment deployment-name
+# 查看发布状态
+kubectl rollout status deployment deployment-name
+# 回退到上一个版本
+kubectl rollout undo deployment deployment-name
+```
+
+## cm和secret
+1、创建configmap
+```
+kubectl create configmap special-config --from-literal=special.how=very --from-literal=special.type=charm
+kubectl create configmap game-config-3 --from-file=<my-key-name>=<path-to-file>
+```
+
+2、创建secret
+```
+# 在命令中指定key和value
+kubectl create secret generic db-user-pass --from-literal=username=voidking --from-literal=password='vkpassword'
+kubectl get secret db-user-pass -o yaml
+
+# 在文件中指定value
+echo -n 'voidking' > ./username.txt
+echo -n 'vkpassword' > ./password.txt
+kubectl create secret generic db-user-pass --from-file=./username.txt --from-file=./password.txt
+kubectl create secret generic db-user-pass --from-file=username=./username.txt --from-file=password=./password.txt
+kubectl get secret db-user-pass -o yaml
+```
+在yaml文件中看到的username和password，都是经过base64加密的字符串。
+```
+# 加密
+echo -n 'voidking' | base64
+# 解密
+echo 'dm9pZGtpbmc=' | base64 --decode
+```
+
 # yaml相关
 ## 导出yaml或json文件
 ```
@@ -213,24 +277,7 @@ pod、service、node的yaml/json文件的导出方法和deployment相同。
 ```
 kubectl run vk-pod --image=nginx --generator=run-pod/v1 -l 'name=vk-pod,env=dev' --dry-run -o yaml
 kubectl run vk-pod --image=nginx --generator=run-pod/v1 --labels='name=vk-pod,env=dev' --dry-run -o yaml
-```
-生成内容为：
-```
-apiVersion: v1
-kind: Pod
-metadata:
-  creationTimestamp: null
-  labels:
-    run: vk-pod
-  name: vk-pod
-spec:
-  containers:
-  - image: nginx
-    name: vk-pod
-    resources: {}
-  dnsPolicy: ClusterFirst
-  restartPolicy: Always
-status: {}
+kubectl run vk-pod --image=busybox --generator=run-pod/v1 --dry-run -o yaml --command -- sleep 1000
 ```
 
 更多内容，参考[Kubernetes kubectl run 命令详解](http://docs.kubernetes.org.cn/468.html)。
@@ -256,33 +303,6 @@ Flag --export has been deprecated, This flag is deprecated and will be removed i
 ```
 kubectl create deployment vk-deploy --image=nginx --dry-run -o yaml
 ```
-生成内容为：
-```
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  creationTimestamp: null
-  labels:
-    app: vk-deploy
-  name: vk-deploy
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: vk-deploy
-  strategy: {}
-  template:
-    metadata:
-      creationTimestamp: null
-      labels:
-        app: vk-deploy
-    spec:
-      containers:
-      - image: nginx
-        name: nginx
-        resources: {}
-status: {}
-```
 
 更多内容，参考[Kubernetes kubectl create deployment 命令详解](http://docs.kubernetes.org.cn/535.html)。
 
@@ -294,27 +314,6 @@ status: {}
 生成service的yaml文件模板（推荐方法）：
 ```
 kubectl create service clusterip vk-svc --tcp="5678:80" --dry-run -o yaml 
-```
-生成内容为：
-```
-apiVersion: v1
-kind: Service
-metadata:
-  creationTimestamp: null
-  labels:
-    app: vk-svc
-  name: vk-svc
-spec:
-  ports:
-  - name: 5678-80
-    port: 5678
-    protocol: TCP
-    targetPort: 80
-  selector:
-    app: vk-svc
-  type: ClusterIP
-status:
-  loadBalancer: {}
 ```
 
 更多内容，参考[Kubernetes kubectl create service 命令详解](http://docs.kubernetes.org.cn/564.html)和[Service](https://kubernetes.io/docs/concepts/services-networking/service/)。
@@ -405,11 +404,22 @@ kubectl uncordon nodename
 ```
 
 # 容器交互
-## 登录容器
+## 执行命令
+1、登录容器
 ```
-kubectl get pods
 kubectl exec -it pod-name /bin/bash
 kubectl exec -it pod-name -c container-name /bin/bash
+kubectl exec -it pod-name -c container-name sh
+```
+
+2、直接执行命令
+```
+kubectl exec pod-name env
+kubectl exec pod-name -- env
+kubectl exec pod-name -it -- env
+kubectl exec -n default pod-name -it -- env
+# 命令带参数时必须加双横线
+kubectl exec pod-name -- sh -c 'echo ${LANG}'
 ```
 
 ## 拷贝文件
@@ -457,6 +467,8 @@ kubectl get endpoints ${SERVICE_NAME}
 [voidking/k8s-tool](https://github.com/voidking/k8s-tool)
 
 # 书签
+[kubectl Cheat Sheet](https://kubernetes.io/docs/reference/kubectl/cheatsheet/)
+
 [Overview of kubectl](https://kubernetes.io/docs/reference/kubectl/overview/)
 
 [Kubernetes kubectl 命令表](http://docs.kubernetes.org.cn/683.html)
