@@ -145,3 +145,8 @@ snapshot restore /tmp/snapshot-pre-boot.db
       type: DirectoryOrCreate
     name: etcd-certs
 ```
+
+# install k8s
+https://github.com/kelseyhightower/kubernetes-the-hard-way
+
+https://github.com/mmumshad/kubernetes-the-hard-way
