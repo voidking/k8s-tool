@@ -463,6 +463,27 @@ kubectl describe rc ${CONTROLLER_NAME}
 kubectl get endpoints ${SERVICE_NAME}
 ```
 
+# 小技巧
+## service cidr
+怎样查看一个k8s集群的service ip范围？
+```
+kubeadm config view | grep Subnet
+kubectl get pods -n kube-system kube-apiserver-master -oyaml | grep service-cluster-ip-range
+```
+
+## pod cidr
+怎样查看一个k8s集群的pod ip范围？
+```
+kubeadm config view | grep Subnet
+kubectl cluster-info dump | grep -i cidr
+```
+
+如果上面两个方法都找不到，那么还可以通过网络组件的日志来查看，以weave为例。
+```
+docker ps | grep weave
+docker logs <weave-container-id> | grep ipalloc-range
+```
+
 # k8s工具箱
 [voidking/k8s-tool](https://github.com/voidking/k8s-tool)
 
