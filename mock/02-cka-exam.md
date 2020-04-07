@@ -6,8 +6,9 @@
 
 第一题
 
-2. Set configuration context $ kubectl config use-context k8s Monitor the logs of Pod foobar and
+2. Set configuration context $ kubectl config use-context k8s 
 
+Monitor the logs of Pod foobar and
 Extract log lines corresponding to error file-not-found
 Write them to /opt/KULM00201/foobar
 
@@ -31,7 +32,9 @@ Use Daemonsets to complete this task and use ds.kusc00201 as Daemonset name. Que
 
 第四题
 
-5. Set configuration context $ kubectl config use-context k8s Perform the following tasks
+5. Set configuration context $ kubectl config use-context k8s 
+
+Perform the following tasks
 
 Add an init container to lumpy–koala (Which has been defined in spec file /opt/kucc00100/pod-spec-KUCC00100.yaml)
 The init container should create an empty file named /workdir/calm.txt
@@ -50,7 +53,9 @@ Question weight: 4%
 
 第六题
 
-7. Set configuration context $ kubectl config use-context k8s Schedule a Pod as follows:
+7. Set configuration context $ kubectl config use-context k8s 
+
+Schedule a Pod as follows:
 
 Name: nginx-kusc00101
 Image: nginx
@@ -60,7 +65,9 @@ Question weight: 2%
 
 第七题
 
-8. Set configuration context $ kubectl config use-context k8s Create a deployment as follows
+8. Set configuration context $ kubectl config use-context k8s 
+
+Create a deployment as follows
 
 Name: nginx-app
 Using container nginx with version 1.10.2-alpine
@@ -82,15 +89,20 @@ Question weight: 4%
 
 第九题
 
-10. Set configuration context $ kubectl config use-context k8s Create a Pod as follows:
+10. Set configuration context $ kubectl config use-context k8s 
+
+Create a Pod as follows:
 
 Name: jenkins
 Using image: jenkins
 In a new Kubenetes namespace named website-frontend 
 Question weight 3%
+
 第十题
 
-11. Set configuration context $ kubectl config use-context k8s Create a deployment spec file that will:
+11. Set configuration context $ kubectl config use-context k8s 
+
+Create a deployment spec file that will:
 
 Launch 7 replicas of the redis image with the label: app_env_stage=dev
 Deployment name: kual00201
@@ -113,7 +125,9 @@ Question weight: 3%
 
 第十二题
 
-13. Set configuration context $ kubectl config use-context k8s Create a Kubernetes Secret as follows:
+13. Set configuration context $ kubectl config use-context k8s 
+
+Create a Kubernetes Secret as follows:
 
 Name: super-secret
 Credential: alice  or username:bob 
@@ -126,7 +140,9 @@ Question weight: 9%
 
 第十三题
 
-14. Set configuration context $ kubectl config use-context k8s Create a pad as follows:
+14. Set configuration context $ kubectl config use-context k8s 
+
+Create a pad as follows:
 
 Name: non-persistent-redis
 Container image: redis
@@ -139,7 +155,9 @@ Question weight: 4%
 
 第十四题
 
-15. Set configuration context $ kubectl config use-context k8s Scale the deployment webserver to 6 pods
+15. Set configuration context $ kubectl config use-context k8s 
+
+Scale the deployment webserver to 6 pods
 
 Question weight: 1%
 
@@ -161,7 +179,9 @@ Question weight: 2%
 
 第十七题
 
-18. Set configuration context $ kubectl config use-context k8s Create a deployment as follows
+18. Set configuration context $ kubectl config use-context k8s 
+
+Create a deployment as follows
 
 Name: nginx-dns
 Exposed via a service: nginx-dns
@@ -208,6 +228,7 @@ Hints:
 
 You can ssh to the failed node using $ ssh wk8s-node-0
 You can assume elevated privileges on the node with the following command $ sudo -i Question weight: 4%
+
 第二十一题
 
 22. Set configuration context $ kubectl config use-context wk8s
@@ -218,6 +239,7 @@ Hints:
 
 You can ssh to the failed node using $ ssh wk8s-node-1
 You can assume elevated privileges on the node with the following command $ sudo -i Question weight: 4%
+
 第二十二题
 
 23. Set configuration context $ kubectl config use-context ik8s
