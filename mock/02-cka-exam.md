@@ -287,6 +287,6 @@ Question weight: 4%
 
 25. Set configuration context $ kubectl config use-context hk8s
 
-Creae a persistent volume with name app-config of capacity 1Gi and access mode ReadWriteOnce. The type of volume is hostPath and its location is /srv/app-config
+Create a persistent volume with name app-config of capacity 1Gi and access mode ReadWriteOnce. The type of volume is hostPath and its location is /srv/app-config
 
 Question weight: 3%

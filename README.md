@@ -146,6 +146,11 @@ snapshot restore /tmp/snapshot-pre-boot.db
     name: etcd-certs
 ```
 
+# curl apiserver
+```
+curl -H "Authorization: Bearer $TOKEN" $APISERVER/api/v1/namespaces/default/pods/  --insecure
+```
+
 # install k8s
 https://github.com/kelseyhightower/kubernetes-the-hard-way
 
