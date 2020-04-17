@@ -151,6 +151,15 @@ snapshot restore /tmp/snapshot-pre-boot.db
 curl -H "Authorization: Bearer $TOKEN" $APISERVER/api/v1/namespaces/default/pods/  --insecure
 ```
 
+# cert transport
+
+```
+# pem to der
+openssl x509 -in cert.crt -outform der -out cert.der
+# der to pem
+openssl x509 -in cert.crt -inform der -outform pem -out cert.pem
+```
+
 # install k8s
 https://github.com/kelseyhightower/kubernetes-the-hard-way
 
