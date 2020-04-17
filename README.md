@@ -24,22 +24,67 @@ kubectl create secret generic db-user-pass --from-literal=username=voidking --fr
 kubectl expose deployment deployment-name --port=6789 --target-port=80
 ```
 
-# csr
-1、签名
+# 创建用户并授权
+1、生成证书
 ```
-openssl genrsa -out voidking.key 2048
-openssl req -new -key voidking.key -subj  "/CN=voidking" -out voidking.csr
-cat voidking.csr | base64
+openssl genrsa -out jane.key 2048
+openssl req -new -key jane.key -subj  "/CN=jane" -out jane.csr
+cat jane.csr | base64
+```
 
-kubectl apply -f voidking-csr.yaml
+2、签名
+```
+# edit jane-csr.yaml
+kubectl apply -f jane-csr.yaml
 kubectl get csr 
-kubectl certificate approve voidking
-kubectl get csr voidking -o yaml
+kubectl certificate approve jane
+kubectl get csr jane -o yaml
 ```
 
-2、查看证书详细信息
+3、创建角色，绑定角色
 ```
-openssl x509 -in file-path.crt -text -noout
+kubectl create role --help
+kubectl create role developer --resource=pods --verb=list,create
+kubectl create rolebinding dev-user-binding --role=developer --user=jane
+
+# or edit developer-role.yaml
+kubectl apply -f developer-role.yaml
+```
+
+4、权限验证
+```
+kubectl auth can-i list pods --as jane
+kubectl get pods --as jane
+```
+
+5、生成kubeconfig
+```
+kubectl config view
+cat .kube/config | grep certificate-authority-data | awk '{print $2}' | base64 --decode > ca.crt
+
+kubectl config set-cluster kubernetes \
+--server="https://172.17.0.69:6443" \
+--certificate-authority=/root/ca.crt \
+--embed-certs=true \
+--kubeconfig=jane.kubeconfig
+
+kubectl config set-credentials jane \
+--client-certificate=/root/jane.crt \
+--client-key=/root/jane.key \
+--embed-certs=true \
+--kubeconfig=jane.kubeconfig
+
+kubectl config set-context jane@kubernetes \
+--cluster=kubernetes \
+--user=jane \
+--namespace=default \
+--kubeconfig=jane.kubeconfig
+
+cat jane.kubeconfig
+kubectl config view --kubeconfig jane.kubeconfig
+
+export KUBECONFIG=/root/jane.kubeconfig
+kubectl config use-context jane@kubernetes --kubeconfig=jane.kubeconfig
 ```
 
 # secret for registry
@@ -165,8 +210,15 @@ curl -H "Authorization: Bearer $TOKEN" $APISERVER/api/v1/namespaces/default/pods
 # cert transport
 
 ```
+# 查看pem证书
+openssl x509 -in cert.pem -text -noout
+
+# 查看der证书
+openssl x509 -in cert.der -inform der -text -noout
+
 # pem to der
 openssl x509 -in cert.crt -outform der -out cert.der
+
 # der to pem
 openssl x509 -in cert.crt -inform der -outform pem -out cert.pem
 ```
