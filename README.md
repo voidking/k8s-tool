@@ -79,12 +79,15 @@ kubectl config set-context jane@kubernetes \
 --user=jane \
 --namespace=default \
 --kubeconfig=jane.kubeconfig
+```
 
+6、使用新的kubeconfig
+```
 cat jane.kubeconfig
 kubectl config view --kubeconfig jane.kubeconfig
-
 export KUBECONFIG=/root/jane.kubeconfig
 kubectl config use-context jane@kubernetes --kubeconfig=jane.kubeconfig
+kubectl get pods
 ```
 
 # secret for registry
