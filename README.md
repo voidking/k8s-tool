@@ -146,6 +146,17 @@ snapshot restore /tmp/snapshot-pre-boot.db
     name: etcd-certs
 ```
 
+## status
+```
+HOST_1=10.240.0.17
+HOST_2=10.240.0.18
+HOST_3=10.240.0.19
+ENDPOINTS=$HOST_1:2379,$HOST_2:2379,$HOST_3:2379
+etcdctl --endpoints=$ENDPOINTS member list
+etcdctl --write-out=table --endpoints=$ENDPOINTS endpoint status
+etcdctl --endpoints=$ENDPOINTS endpoint health
+```
+
 # curl apiserver
 ```
 curl -H "Authorization: Bearer $TOKEN" $APISERVER/api/v1/namespaces/default/pods/  --insecure
