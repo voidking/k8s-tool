@@ -21,3 +21,7 @@
 [cka-lab-practice](https://github.com/stretchcloud/cka-lab-practice)
 
 [cka-practice-environment](https://github.com/arush-sal/cka-practice-environment)
+
+[dgkanatsios/CKAD-exercises](https://github.com/dgkanatsios/CKAD-exercises)
+
+[bmuschko/ckad-prep](https://github.com/bmuschko/ckad-prep)
